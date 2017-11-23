@@ -74,7 +74,7 @@ def extract_note():
 
     global number_of_slots
     number_of_slots = number_of_rooms * number_of_periods * number_of_days_per_week
-    print(number_of_slots)
+    print("number of slots : " + str(number_of_slots))
 
 
 def print_note():
@@ -176,15 +176,14 @@ def calculate_heuristic_cost(now_list):
 
 
 def print_arrangement(list_of_lists):
-
     for a_list in list_of_lists:
-
         for item in a_list:
             print(item)
         print('\n')
 
 
 def find_optimal_arrangement():
+
     # create empty list of lists
     list_of_lists = []
     for x in range(number_of_slots):
@@ -199,6 +198,7 @@ def find_optimal_arrangement():
     # shuffle a requirement and switch to that arrangement if heuristic cost is lower
     i = 0
     while i < 1000:
+
         # copy the list first
         temp_list_of_lists = list_of_lists[:]
 
@@ -240,9 +240,7 @@ def main():
 
     extract_note()
     # print_note()
-
     extract_requirements()
-
     find_optimal_arrangement()
 
 
