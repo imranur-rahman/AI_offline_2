@@ -21,7 +21,7 @@ number_of_subjects = 0
 number_of_requirements = 0
 number_of_slots = 0
 
-number_of_periods = 5
+number_of_periods = 2
 number_of_days_per_week = 6
 
 teacher_conflict_weight = 1
@@ -129,6 +129,9 @@ def calculate_heuristic_cost(now_list):
     room_conflict_count = 0
     class_conflict_count = 0
 
+    if not now_list:
+        return Decimal('Infinity')
+
     for a_list in now_list:
 
         # initialize empty arrays
@@ -182,7 +185,7 @@ def print_arrangement(list_of_lists):
         print('\n')
 
 
-def find_optimal_arrangement():
+def stochastic_first_choice_hill_climbing():
 
     # create empty list of lists
     list_of_lists = []
@@ -219,11 +222,11 @@ def find_optimal_arrangement():
                 break
 
         if not is_found:
-            # that means everything is ok, we can return
+            # that means no successor having lower cost is found, we can return this state
             print("nothing to shuffle")
             print(calculate_heuristic_cost(list_of_lists))
-            print_arrangement(list_of_lists)
-            return
+            # print_arrangement(list_of_lists)
+            return list_of_lists
 
         if calculate_heuristic_cost(temp_list_of_lists) < calculate_heuristic_cost(list_of_lists):
             list_of_lists = temp_list_of_lists
@@ -232,8 +235,23 @@ def find_optimal_arrangement():
             i += 1
 
     # now we have found the arrangement which is consistently lower in 1000 iterations
-    print_arrangement(list_of_lists)
-    print(calculate_heuristic_cost(list_of_lists))
+    # print_arrangement(list_of_lists)
+    # print(calculate_heuristic_cost(list_of_lists))
+    return list_of_lists
+
+
+def random_restart_hill_climbing():
+    best_list_of_lists = []
+    i = 0
+    while i < 10:
+        now_list_of_lists = stochastic_first_choice_hill_climbing()
+        if calculate_heuristic_cost(now_list_of_lists) < calculate_heuristic_cost(best_list_of_lists):
+            best_list_of_lists = now_list_of_lists
+            i = 0
+        else:
+            i += 1
+    print_arrangement(best_list_of_lists)
+    print(calculate_heuristic_cost(best_list_of_lists))
 
 
 def main():
@@ -241,7 +259,8 @@ def main():
     extract_note()
     # print_note()
     extract_requirements()
-    find_optimal_arrangement()
+    # stochastic_first_choice_hill_climbing()
+    random_restart_hill_climbing()
 
 
 if __name__ == '__main__':
