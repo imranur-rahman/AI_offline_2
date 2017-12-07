@@ -1,6 +1,8 @@
 from decimal import Decimal
 from random import randint
 
+import time
+
 
 class Requirement:
     def __init__(self, room, teacher, _class):
@@ -21,7 +23,7 @@ number_of_subjects = 0
 number_of_requirements = 0
 number_of_slots = 0
 
-number_of_periods = 2
+number_of_periods = 5
 number_of_days_per_week = 6
 
 teacher_conflict_weight = 1
@@ -74,6 +76,7 @@ def extract_note():
 
     global number_of_slots
     number_of_slots = number_of_rooms * number_of_periods * number_of_days_per_week
+    # number_of_slots = number_of_periods * number_of_days_per_week
     print("number of slots : " + str(number_of_slots))
 
 
@@ -185,6 +188,79 @@ def print_arrangement(list_of_lists):
         print('\n')
 
 
+def find_min_cost_successor_from_this_state(list_of_lists):
+    min_cost = calculate_heuristic_cost(list_of_lists)
+    min_cost_list = list_of_lists[:]
+
+    i = 0
+    for each_list in list_of_lists:
+
+        if len(each_list) == 0:
+            i += 1
+            continue
+
+        j = 0
+        while j < len(each_list):
+
+            k = 0
+            while k < i:
+
+                # copy the list first
+                temp_list_of_lists = list_of_lists[:]
+
+                if len(temp_list_of_lists[i]) > 0:
+
+                    # pop the item to remove
+                    item_to_move = temp_list_of_lists[i].pop(j)
+
+                    # put it in desired position
+                    temp_list_of_lists[k].append(item_to_move)
+
+                    if calculate_heuristic_cost(temp_list_of_lists) < min_cost:
+
+                        min_cost = calculate_heuristic_cost(temp_list_of_lists)
+                        min_cost_list = temp_list_of_lists
+
+                k += 1
+
+            j += 1
+
+        i += 1
+
+    return min_cost_list
+
+
+def hill_climbing():
+    # create empty list of lists
+    list_of_lists = []
+    for x in range(number_of_slots):
+        temp_list = []
+        list_of_lists.append(temp_list)
+
+    # initial assignment of random order
+    for item in requirement:
+        index = randint(0, number_of_slots - 1)
+        list_of_lists[index].append(item)
+
+    cnt = 0
+    while True:
+        temp_list_of_lists = find_min_cost_successor_from_this_state(list_of_lists)
+
+        # if they are same then we have found the local minima
+        if calculate_heuristic_cost(list_of_lists) == calculate_heuristic_cost(temp_list_of_lists):
+            break
+
+        list_of_lists = temp_list_of_lists
+
+        print("loop count : " + cnt)
+        cnt += 1
+
+    print_arrangement(list_of_lists)
+    print(calculate_heuristic_cost(list_of_lists))
+
+    return list_of_lists
+
+
 def stochastic_first_choice_hill_climbing():
 
     # create empty list of lists
@@ -224,8 +300,8 @@ def stochastic_first_choice_hill_climbing():
         if not is_found:
             # that means no successor having lower cost is found, we can return this state
             print("nothing to shuffle")
+            print_arrangement(list_of_lists)
             print(calculate_heuristic_cost(list_of_lists))
-            # print_arrangement(list_of_lists)
             return list_of_lists
 
         if calculate_heuristic_cost(temp_list_of_lists) < calculate_heuristic_cost(list_of_lists):
@@ -235,8 +311,8 @@ def stochastic_first_choice_hill_climbing():
             i += 1
 
     # now we have found the arrangement which is consistently lower in 1000 iterations
-    # print_arrangement(list_of_lists)
-    # print(calculate_heuristic_cost(list_of_lists))
+    print_arrangement(list_of_lists)
+    print(calculate_heuristic_cost(list_of_lists))
     return list_of_lists
 
 
@@ -256,11 +332,17 @@ def random_restart_hill_climbing():
 
 def main():
 
+    start_time = time.time()
+
     extract_note()
     # print_note()
     extract_requirements()
-    # stochastic_first_choice_hill_climbing()
-    random_restart_hill_climbing()
+    # hill_climbing()
+    stochastic_first_choice_hill_climbing()
+    # random_restart_hill_climbing()
+
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
 
 
 if __name__ == '__main__':
